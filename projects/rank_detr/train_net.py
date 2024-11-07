@@ -98,7 +98,7 @@ class Trainer(SimpleTrainer):
         """
         assert self.model.training, "[Trainer] model was changed to eval mode!"
         assert torch.cuda.is_available(), "[Trainer] CUDA is required for AMP training!"
-        from torch.cuda.amp import autocast
+        from torch.amp import autocast
 
         start = time.perf_counter()
         """
@@ -115,7 +115,7 @@ class Trainer(SimpleTrainer):
         else:
             self.model.module.criterion.matcher.iter = self.iter
         loss_dict = self.model(data)
-        with autocast(enabled=self.amp):
+        with autocast('cuda',enabled=self.amp):
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict
                 loss_dict = {"total_loss": loss_dict}
@@ -278,6 +278,7 @@ def do_train(args, cfg):
 def main(args):
     cfg = LazyConfig.load(args.config_file)
     cfg = LazyConfig.apply_overrides(cfg, args.opts)
+
     default_setup(cfg, args)
 
     if args.eval_only:
