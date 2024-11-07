@@ -9,13 +9,32 @@ from __future__ import print_function
 from __future__ import division
 
 import warnings
+from typing import Callable
 import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
-from torch.cuda.amp import custom_bwd, custom_fwd
 from torch.nn.init import xavier_uniform_, constant_
+
+
+def custom_amp_decorator(dec: Callable, cuda_amp_deprecated: bool):
+    def decorator(*args, **kwargs):
+        if cuda_amp_deprecated:
+            kwargs["device_type"] = "cuda"
+        return dec(*args, **kwargs)
+    return decorator
+
+
+if hasattr(torch.amp, "custom_fwd"): # type: ignore[attr-defined]
+    deprecated = True
+    from torch.amp import custom_fwd, custom_bwd # type: ignore[attr-defined]
+else:
+    deprecated = False
+    from torch.cuda.amp import custom_fwd, custom_bwd
+
+custom_fwd = custom_amp_decorator(custom_fwd, deprecated)
+custom_bwd = custom_amp_decorator(custom_bwd, deprecated)
 
 
 class DCNv3Function(Function):
