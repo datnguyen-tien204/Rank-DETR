@@ -75,7 +75,7 @@ dataloader.test = L(build_detection_test_loader)(
 )
 
 dataloader.evaluator = L(COCOEvaluator)(
-    dataset_name="${..test.dataset.names}",
+    dataset_name="${my_dataset_test}",
 )
 dataloader.val = L(build_detection_test_loader)(
     dataset=L(get_detection_dataset_dicts)(names="my_dataset_val", filter_empty=False),
