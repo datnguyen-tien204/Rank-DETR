@@ -7,11 +7,11 @@ optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+train.init_checkpoint = "/kaggle/working/Rank-DETR/rank_detr_swin_large_two_stage_12ep.pth"
 train.output_dir = "./output/rank_detr_r50_50ep"
 
 # max training iterations
-train.max_iter = 375000
+train.max_iter = 25000
 
 # run evaluation every 5000 iters
 train.eval_period = 5000
@@ -38,12 +38,12 @@ optimizer.weight_decay = 1e-4
 optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
-dataloader.train.num_workers = 16
+dataloader.train.num_workers = 4
 
 # please notice that this is total batch size.
 # surpose you're using 4 gpus for training and the batch size for
 # each gpu is 16/4 = 4
-dataloader.train.total_batch_size = 16
+dataloader.train.total_batch_size = 2
 
 # dump the testing results into output_dir for visualization
 dataloader.evaluator.output_dir = train.output_dir
