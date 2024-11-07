@@ -11,10 +11,19 @@ from detectron2.evaluation import COCOEvaluator
 
 from detrex.data import DetrDatasetMapper
 
+
+from detectron2.data.datasets import register_coco_instances
+
+register_coco_instances("my_dataset_train", {}, '/kaggle/working/Rank-DETR/COCO_RainFinal2/annotations/instance_train2017.json', '/kaggle/working/Rank-DETR/COCO_RainFinal2/train2017')
+register_coco_instances("my_dataset_test", {}, '/kaggle/working/Rank-DETR/COCO_RainFinal2/annotations/instance_test2017.json', '/kaggle/working/Rank-DETR/COCO_RainFinal2/test2017')
+register_coco_instances("my_dataset_val", {}, '/kaggle/working/Rank-DETR/COCO_RainFinal2/annotations/instance_val2017.json', '/kaggle/working/Rank-DETR/COCO_RainFinal2/val2017')
+
+
+
 dataloader = OmegaConf.create()
 
 dataloader.train = L(build_detection_train_loader)(
-    dataset=L(get_detection_dataset_dicts)(names="coco_2017_train"),
+    dataset=L(get_detection_dataset_dicts)(names="my_dataset_train"),
     mapper=L(DetrDatasetMapper)(
         augmentation=[
             L(T.RandomFlip)(),
@@ -44,12 +53,12 @@ dataloader.train = L(build_detection_train_loader)(
         mask_on=False,
         img_format="RGB",
     ),
-    total_batch_size=16,
+    total_batch_size=1,
     num_workers=4,
 )
 
 dataloader.test = L(build_detection_test_loader)(
-    dataset=L(get_detection_dataset_dicts)(names="coco_2017_val", filter_empty=False),
+    dataset=L(get_detection_dataset_dicts)(names="my_dataset_test", filter_empty=False),
     mapper=L(DetrDatasetMapper)(
         augmentation=[
             L(T.ResizeShortestEdge)(
@@ -67,4 +76,20 @@ dataloader.test = L(build_detection_test_loader)(
 
 dataloader.evaluator = L(COCOEvaluator)(
     dataset_name="${..test.dataset.names}",
+)
+dataloader.val = L(build_detection_test_loader)(
+    dataset=L(get_detection_dataset_dicts)(names="my_dataset_val", filter_empty=False),
+    mapper=L(DetrDatasetMapper)(
+        augmentation=[
+            L(T.ResizeShortestEdge)(
+                short_edge_length=800,
+                max_size=1333,
+            ),
+        ],
+        augmentation_with_crop=None,
+        is_train=False,
+        mask_on=False,
+        img_format="RGB",
+    ),
+    num_workers=4,
 )
